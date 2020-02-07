@@ -1,0 +1,25 @@
+{
+  "name": "node-red-contrib-synaccess-netbooter",
+  "version": "0.0.1",
+  "description": "Interface for synaccess netbooter devices",
+  "main": "index.js",
+  "dependencies": {
+    "node-fetch": "^2.6.0",
+    "node-red-contrib-http-request": "^0.1.14"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test"
+  },
+  "author": "Charles A Brouwers",
+  "license": "ISC",
+  "node-red": {
+    "nodes": {
+      "netbooter": "synaccess-netbooter.js",
+      "data_in": "synaccess-data-in.js",
+      "receiver": "synaccess-receiver.js",
+      "sender": "synaccess-sender.js"
+    }
+  }
+}
+
