@@ -1,2 +1,0 @@
-C:\Users\Charles-Andre.HOME\.node-red\dev\node-red-contrib-synaccess-netbooter\obj\Debug\node-red-contrib-synaccess-netbooter.njsprojAssemblyReference.cache
-C:\Users\Charles-Andre.HOME\.node-red\dev\node-red-contrib-synaccess-netbooter\bin\Microsoft.NodejsTools.WebRole.dll
