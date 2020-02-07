@@ -1,0 +1,55 @@
+﻿<script type="text/javascript">
+    RED.nodes.registerType('data in', {
+        category: 'Synaccess',
+        color: '#c0c0c0',
+        defaults: {
+            name: { value: "" },
+            netbooter: { value: "", type: "netbooter" },
+        },
+        inputs: 0,
+        outputs: 1,
+        icon: "receiver.png",
+        label: function () {
+            return this.name || "data in";
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="data in">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-netbooter"><i class="icon-tag"></i> netbooter</label>
+        <input type="text" id="node-input-netbooter" placeholder="netbooter">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="data in">
+    <p>A node that provides updates on the state of a Netbooter's switches</p>
+    <p>This node provides raw data and is intended for custom processing. In general, the receiver node will be easier to use.</p>
+    <h3>Ouput</h3>
+    <dl class="message-properties">
+        <dt>
+            <code>payload</code>
+            <span class="property-type">JSON</span>
+        </dt>
+        <dd>
+            The exact content of the JSON will depend on the status of the Netbooter.
+        </dd>
+    </dl>
+    <h3>Details</h3>
+    <p>Possible properties of the <code>msg.payload</code> are: </p>
+    <ul>
+        <li>Success: A boolean value  reflecting the success or failure of the pooling of the Netbooter</li>
+        <li>States: An arrray of boolean values reflecting the status of each switche. Attention: the value at index 0 corresponds to switch 1.</li>
+        <li>Current: The electrical current reading (individual readings per switch are not supported).</li>
+        <li>Temperature: The temperature reading.</li>
+        <li>Timestamp: The time of the data.</li>
+        <li>Text: The actual text strings received when pooling the Netbooter (split at the commas).</li>
+        <li>Error: An error message.</li>
+        <li>Simulation: the boolean <code>true</code> if the interface operates in simulation mode</li>
+    </ul>
+
+</script>
