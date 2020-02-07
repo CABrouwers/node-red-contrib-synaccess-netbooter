@@ -13,6 +13,7 @@
   },
   "author": "Charles A Brouwers",
   "license": "ISC",
+  "keywords": [ "node-red" ],
   "node-red": {
     "nodes": {
       "netbooter": "synaccess-netbooter.js",
