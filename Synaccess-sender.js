@@ -34,17 +34,34 @@ module.exports = function (RED) {
 
         setStatus(false);
 
+
         var signal = utils.pseudoParify(config.signal)
         var signaled = Object.keys(signal).length > 0
+        if (signaled) {
+            config.usetopic = false;
+        }
+
+        var recognizeTopic = config.usetopic;
+
 
         var filter = utils.tablify(config.filter)
         var filtered = Object.keys(filter).length > 0
 
         node.on('input', function (msg, send, done) {
+            var inLoad;
+            if (recognizeTopic && msg.topic) {
+                inLoad = { [msg.topic]: msg.payload }
+            }
+            else {
+                inLoad = msg.payload
+            }
+
+
+
             if (receiver) {
                 let cmd = {}
                 if (signaled) {
-                    let values = utils.tablify(msg.payload)
+                    let values = utils.tablify(inLoad)
                     signal.forEach((entry) => {
                         let key = entry[0]
                         let val = entry[1]
@@ -60,7 +77,7 @@ module.exports = function (RED) {
 
                     if (filtered) {
 
-                        Object.entries(utils.commandify(msg.payload)).forEach((entry) => {
+                        Object.entries(utils.commandify(inLoad)).forEach((entry) => {
                             let key = entry[0];
                             if (!filter.includes(server.translate(key))) { return }
                             let val = entry[1];
@@ -69,9 +86,10 @@ module.exports = function (RED) {
                         })
 
                     }
-                    else { cmd = utils.commandify(msg.payload) }
+                    else { cmd = utils.commandify(inLoad)}
                 }
                 setStatus(true);
+
                 receiver.repeat(cmd);
             }
             done()

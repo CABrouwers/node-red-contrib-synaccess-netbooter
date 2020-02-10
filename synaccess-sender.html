@@ -7,6 +7,7 @@
             signal: { value: "" },
             filter: { value: "" },
             netbooter: { value: "", type: "netbooter" },
+            usetopic: { value: "" },
         },
         inputs: 1,
         outputs: 0,
@@ -34,7 +35,10 @@
         <label for="node-input-signal"><i class="icon-tag"></i> Signal</label>
         <input type="text" id="node-input-signal" placeholder="Name">
     </div>
-
+    <div class="form-row">
+        <label for="node-input-usetopic"><i class="icon-tag"></i> Recognize topic ?</label>
+        <input type="checkbox" id="node-input-usetopic" placeholder="true">
+    </div>
 </script>
 
 <script type="text/html" data-help-name="sender">
@@ -46,63 +50,70 @@
             <span class="property-type">string | JSON</span>
         </dt>
         <dd>Commands to be sent to the Netbooter. </dd>
+        <dt>
+            <code>topic</code>
+            <span class="property-type">string | JSON</span>
+        </dt>
+        <dd>The topic can be used to designate the name of the switch to be modified (Optional) </dd>
     </dl>
 
     <h3>Details</h3>
     <p>
-        The node processes <code>msg.payload</code>, sends as the corresponding command to the Netbooter,  then the interface  checks the state of the Netbooter and receivers nodes send messages reflecting the new state of the switches.
-        Because of the long response time of Netbooters, several seconds can elapse between the sending of a command and the updates by receiver nodes.
+        When a node receives a message, it is firts processed andthe corresponding commands are send to the Netbooter. Then, the netbooter interface pools the device and registers the state of the switches. 
+        The interface then broadcast the state of the switches to the receivede nodes, that emits message on their output if requried. Because Netbooters respond slowly, several seconds can elapse between  command is sent to a sendder and  updates by receiver nodes.
     </p>
     <p>
-        If the optional configuration fields <code>Filter</code> and <code>Signal</code> are left blank, the <code>msg.payload</code> represents the commands to be sent. Otherwise, it is modified before being sent.
-    </p>
-    <p>
-        If an empty or invalid message is received, the states of the Netbooter switches won't change but but the receiver nodes will  send updates on the state of the switches. This behaviour can be used to just pool the Netbooter.
-    </p>
-    <p>
-        When the optional configuration fields are not used, accepted <code>msg.payload</code> can either be in one of two forms:
+        Incoming messages can encode commands to be sent to the Netbooter in several ways:
         <ul>
-            <li>Condendensed: a string such as <code>1110XTX</code>. Characters from left to right represents switches 1, 2, 3, 4, ... </li>
+            <li><code>msg.topic</code>/<code>msg.payload</code> combinaison: The <code>msg.topic</code> field represents a switch, i.e. <code>"2"</code>. and the <code>msg.payload</code> represents a command such as <code>false</code> </li>
             <li>
-                Detailed: a string or JSON in in the form
-                <code>{ "1":off , "2":true, "router":on}</code>
-                each pair <code>key:value</code> represents a respectively a switch and a command.
+                JSON-like: <code>msg.payload</code> contains a string or JSON in the form <code>{ "1":off , "2":true, "router":on}</code> representing pairs of switches and commands
+                For string <code>msg.payload</code>,  {} and quotes are optional, excepted in the case of names containing space characters. Such names must be enclosed in single or double quotes.
             </li>
+            <li>Condendensed form: <code>msg.payload</code> contains a string such as <code>1110XTX</code>. Characters from left to right represents commands to switches 1, 2, 3, 4, ... </li>
+            <li>Command list: <code>msg.payload</code> contains a string such as <code>on, off, t, true</code>. These commands are combined with the optional signal string, which should contain a series of switch names (See hereunder)</li>
         </ul>
-
     </p>
     <p>
-        The allowed commands are:
+        If an empty or invalid message is received, the states of the Netbooter switches won't change but but the receiver nodes will nevertheless send updates on the state of the switches. This behaviour can be used to pool the Netbooter without
+        affecting the switches.
+    </p>
+    <h4>Commands</h4>
+    <p>
+        Valid commands are:
         <ul>
             <li><code>false</code>, <code>"off"</code>,  <code>0</code>, <code>"0"</code></li>
             <li><code>true</code>, <code>"on"</code>,  <code>1</code>, <code>"1"</code></li>
             <li><code>T</code> (check current value and toggle)</li>
             <li><code>X</code> (ignore/do nothing)</li>
         </ul>
-        In condensed form, only the caracters <code>0</code>, <code>1</code>, <code>T</code>,and  <code>X</code> are valid
+        If custom names for the value <code>true</code> and <code>false</code> are defined in the netbooter setup, they will also be recognized as valid commands.
+        Commands are NOT case sensitive. In condensed form, only the caracters <code>0</code>, <code>1</code>, <code>T</code>,and  <code>X</code> are understood; anything else is ignored.
     </p>
+    <h4>Switch Names</h4>
     <p>
-        In detailed form, the switch are designated by a number or an optional label defined in the netbooter setup.
-        Anything else is ignored. Non existant switch names are also ignored.  Switches and commands are not case sensitive.
-        if the <code>msg.payload</code> is a string, {} and quotes are optional, except in the case of names containing space characters. Such names must be enclosed in single or double quotes.
+        Switches can either be designated but a number or a custom label as defined in the netbooter setup. Anything else is ignored. Switches names are not case sensitive.
     </p>
     <h4>Filter (optional)</h4>
     <p>
-        The filter is an optional string such as <code>3, light, 1</code> representing a list of switches . When it is present, incoming <code>msg.payload</code>  will be filtered and only commands to the switches included in the filter list will sent to the Netbooter.
+        The filter is an optional string such as <code>3, light, 1</code> representing a list of switches. When it is present, only commands to the switches included in the filter list are sent to the Netbooter.
     </p>
     <h4>Signal (optional)</h4>
     <p>
-        The signal field can be used to send a fixed command every time a message is received or to send anonymous commands to a specific switches.
+        The signal field can be used to send pre-determined commands each time any message is received or to dispatche incoming commands to pre-dermined switches.
     </p>
     <p>
         For example, if the signal string is <code>{1:off, "router":true}</code>, these commands will be sent to the Netbooter every time a message is received, the <code>msg.payload</code> of the received message will be ignored.
     </p>
     <p>
-        If the signal string is <code>{2, "light"}</code>, the <code>msg.payload</code> should be a string in the form <code>true, off</code>. The two will be combined into the command string <code>{"2":1, "light":off}</code>
+        If the signal string is <code>{2, "light"}</code>, the <code>msg.payload</code> should be a string in the form <code>true, off</code>. The two strings will be zipped into the command string <code>{"2":1, "light":off}</code>
     </p>
     <p>
         The two methods can be combined and the <code>msg.payload</code> <code>true, off</code> combined with the signal string <code>{1:off, 2, "router":true, "light"}</code> would become the command <code>{"1":off, "":1, "router":true, "light":off}</code>
     </p>
-
+    <h4>Recognize topic (optional)</h4>
+    <p>
+        When recognize topic box is checked, the <code>msg.topic</code>  is assumed to be a switche number or name and the <code>msg.payload</code> a command. The values are combined and sent to the netbooter. Otherwise the <code>msg.topic</code> is ignored.
+    </p>
 
 </script>
