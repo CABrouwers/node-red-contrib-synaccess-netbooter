@@ -10,13 +10,14 @@ module.exports = function (RED) {
         var isfiltered = filterlist.length > 0;
 
 
-        var lastValues = {}
-        var notonlychanges = !config.onlychanges;
 
+        var lastValues = {}
+        var notOnlyChanges = !config.onlychanges;
+        var useTopic = config.usetopic;
 
         var hasChanged = (key, val) => {
             if (val != val) {val = "Nan"}
-            var ret = notonlychanges || lastValues[key] != val;
+            var ret = notOnlyChanges || lastValues[key] != val;
             lastValues[key] = val;
             return ret;
         }
@@ -24,7 +25,12 @@ module.exports = function (RED) {
         const sendIfChanged = (key, val) => {
             if (hasChanged(key, val)) {
                 setStatus(true);
+                if (useTopic) {
+                    node.send({ payload: val, topic: key })
+                }
+                else { 
                 node.send({ payload: { [key]: val } })
+            }
             }
         }
 
